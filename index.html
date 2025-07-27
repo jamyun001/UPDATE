@@ -5,26 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>체르 평지생존 : 리바이브</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9fbfd;
-      color: #222;
-      transition: background 0.3s, color 0.3s;
+    :root {
+      --bg: #f9fbfd;
+      --card: #e8ecf1;
+      --hover: #d4dae3;
+      --text: #222;
+      --accent: #007aff;
+      --comment-bg: #fff;
+      --comment-border: #ccc;
     }
     body.dark {
-      background: #121212;
-      color: #eee;
+      --bg: #121212;
+      --card: #1e1e1e;
+      --hover: #2a2a2a;
+      --text: #eee;
+      --accent: #00e1ff;
+      --comment-bg: #222;
+      --comment-border: #555;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.3s, color 0.3s;
+      line-height: 1.4;
     }
     .container {
       max-width: 700px;
-      margin: auto;
-      padding: 1.2rem;
+      margin: 0 auto;
+      padding: 1.2rem 1rem;
       position: relative;
     }
     h1 {
       text-align: center;
-      color: #007aff;
+      color: var(--accent);
+      font-size: 1.8rem;
       margin-bottom: 1rem;
     }
     .theme-toggle {
@@ -35,257 +54,309 @@
       border: none;
       font-size: 1.4rem;
       cursor: pointer;
-      color: #007aff;
+      color: var(--accent);
     }
     .notice-item {
-      background: #e8ecf1;
-      padding: 0.8rem;
-      border-radius: 10px;
+      background: var(--card);
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
       margin-bottom: 0.6rem;
       cursor: pointer;
-      transition: transform 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
     }
     .notice-item:hover {
+      background: var(--hover);
       transform: scale(1.02);
     }
     .notice-title {
       font-weight: 600;
     }
     .notice-preview {
-      color: gray;
       font-size: 0.9rem;
+      color: gray;
+      margin-top: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     #detail-view {
       display: none;
-      animation: fadeIn 0.2s ease;
+      animation: fadeIn 0.3s ease;
     }
     .back-button {
       background: none;
-      color: #007aff;
       border: none;
+      color: var(--accent);
+      font-size: 1rem;
       cursor: pointer;
       margin-bottom: 1rem;
+      padding: 0;
     }
     #notice-body {
-      margin-bottom: 2rem;
+      font-size: 1rem;
       line-height: 1.5;
+      margin-bottom: 2rem;
       white-space: pre-wrap;
     }
-    #comment-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    #comment-form input,
-    #comment-form textarea {
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      resize: vertical;
-    }
-    #comment-form button {
-      width: 100px;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      background-color: #007aff;
-      color: white;
-      cursor: pointer;
-      align-self: flex-end;
+    #comments-section {
+      border-top: 1px solid var(--comment-border);
+      padding-top: 1rem;
     }
     #comment-list {
       max-height: 300px;
       overflow-y: auto;
-      border-top: 1px solid #ccc;
-      padding-top: 1rem;
+      margin-bottom: 1rem;
     }
     .comment {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #eee;
+      background: var(--comment-bg);
+      border: 1px solid var(--comment-border);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.6rem;
     }
     .comment strong {
-      color: #007aff;
+      display: block;
+      margin-bottom: 0.2rem;
+      color: var(--accent);
+    }
+    form#comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    form#comment-form input,
+    form#comment-form textarea {
+      padding: 0.5rem;
+      border: 1px solid var(--comment-border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      resize: vertical;
+    }
+    form#comment-form textarea {
+      min-height: 60px;
+      max-height: 150px;
+    }
+    form#comment-form button {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      align-self: flex-start;
+    }
+    form#comment-form button:hover {
+      background: #005bb5;
     }
     @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      #comment-list {
+        max-height: 200px;
+      }
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div class="container">
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
     <h1>📢 공지사항</h1>
+
     <div id="list-view"></div>
+
     <div id="detail-view">
       <button class="back-button" onclick="goBack()">← 목록으로</button>
       <div id="notice-body"></div>
 
-      <form id="comment-form">
-        <input type="text" id="nickname" placeholder="닉네임" required maxlength="20" />
-        <textarea id="message" placeholder="댓글을 작성하세요" required rows="3" maxlength="300"></textarea>
-        <button type="submit">등록</button>
-      </form>
-
-      <div id="comment-list"></div>
+      <section id="comments-section">
+        <h3>댓글</h3>
+        <div id="comment-list"></div>
+        <form id="comment-form">
+          <input type="text" id="nickname" placeholder="닉네임" required maxlength="20" />
+          <textarea id="message" placeholder="댓글을 입력하세요" required maxlength="300"></textarea>
+          <button type="submit">댓글 달기</button>
+        </form>
+      </section>
     </div>
   </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAPVJcXblj0MzeSWhJomvl8xczyp2Unp6w",
-    authDomain: "chating-382e3.firebaseapp.com",
-    projectId: "chating-382e3",
-    storageBucket: "chating-382e3.firebasestorage.app",
-    messagingSenderId: "690140086247",
-    appId: "1:690140086247:web:4635c4c0315f465c110742",
-    measurementId: "G-SD2QM11LHC"
-  };
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  <script>
+    // Firebase 설정 - 자신의 설정값으로 교체
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPVJcXblj0MzeSWhJomvl8xczyp2Unp6w",
+      authDomain: "chating-382e3.firebaseapp.com",
+      projectId: "chating-382e3",
+      storageBucket: "chating-382e3.appspot.com",
+      messagingSenderId: "690140086247",
+      appId: "1:690140086247:web:4635c4c0315f465c110742",
+      measurementId: "G-SD2QM11LHC"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  // 공지 파일 목록 - 실제 배포 환경에서는 서버에서 동적으로 불러오는 게 좋음
-  const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
+    // 공지 md 목록
+    const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
 
-  // 버전 내림차순 정렬 (최신이 위)
-  function versionSort(a, b) {
-    const toArr = v => v.replace("V", "").replace(".md", "").split('.').map(Number);
-    const [a1,a2,a3=0] = toArr(a);
-    const [b1,b2,b3=0] = toArr(b);
-    if (a1 !== b1) return b1 - a1;
-    if (a2 !== b2) return b2 - a2;
-    return b3 - a3;
-  }
-  mdList.sort(versionSort);
+    // 버전 오름차순 정렬 함수 (낮은 버전이 위)
+    function versionSortAsc(a, b) {
+      const toArr = v => v.replace("V","").replace(".md","").split('.').map(Number);
+      const [a1,a2,a3=0] = toArr(a);
+      const [b1,b2,b3=0] = toArr(b);
+      if (a1 !== b1) return a1 - b1;
+      if (a2 !== b2) return a2 - b2;
+      return a3 - b3;
+    }
+    mdList.sort(versionSortAsc);
 
-  const listView = document.getElementById("list-view");
-  const detailView = document.getElementById("detail-view");
-  const noticeBody = document.getElementById("notice-body");
-  const commentForm = document.getElementById("comment-form");
-  const commentList = document.getElementById("comment-list");
+    const listView = document.getElementById('list-view');
+    const detailView = document.getElementById('detail-view');
+    const noticeBody = document.getElementById('notice-body');
+    const commentList = document.getElementById('comment-list');
+    const commentForm = document.getElementById('comment-form');
+    let currentNoticeId = null;
 
-  let currentNoticeId = null;
+    // HTML 이스케이프 함수 (기본 XSS 방지용)
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[m]);
+    }
 
-  // 공지 리스트 생성
-  function createNoticeList() {
-    listView.innerHTML = "";
+    // 마크다운 간단 변환 (#, ##, -, 줄바꿈)
+    function markdownToHtml(md) {
+      return md
+        .replace(/^# (.*)$/gm, '<h2>$1</h2>')
+        .replace(/^## (.*)$/gm, '<h3>$1</h3>')
+        .replace(/^- (.*)$/gm, '<li>$1</li>')
+        .replace(/\n{2,}/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+    }
+
+    // 공지 목록 렌더링
     mdList.forEach(filename => {
       fetch(`updates/${filename}`)
-        .then(res => res.text())
+        .then(r => r.text())
         .then(text => {
-          const title = filename.replace(".md", "");
-          const preview = text.split('\n').find(line => line.trim().length > 0) || "";
-          const shortPreview = preview.length > 60 ? preview.slice(0, 60) + "..." : preview;
-          const div = document.createElement("div");
-          div.className = "notice-item";
-          div.innerHTML = `
-            <div class="notice-title">${title}</div>
-            <div class="notice-preview">${shortPreview}</div>
-          `;
+          const title = filename.replace(".md","");
+          // 첫 의미있는 줄 찾아서 미리보기
+          const preview = text.split('\n').find(l => l.trim().length > 0) || '';
+          const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
+
+          const div = document.createElement('div');
+          div.className = 'notice-item';
+          div.innerHTML = `<div class="notice-title">✅ ${escapeHtml(title)}</div><div class="notice-preview">${escapeHtml(shortPreview)}</div>`;
           div.onclick = () => loadNotice(filename);
           listView.appendChild(div);
         });
     });
-  }
 
-  // 마크다운 단순 변환 (헤더, 리스트, 줄바꿈)
-  function markdownToHtml(md) {
-    return md
-      .replace(/^# (.*$)/gim, "<h2>$1</h2>")
-      .replace(/^## (.*$)/gim, "<h3>$1</h3>")
-      .replace(/^- (.*$)/gim, "<li>$1</li>")
-      .replace(/\n{2,}/g, "</p><p>")
-      .replace(/\n/g, "<br>");
-  }
-
-  // 공지 상세 및 댓글 로드
-  function loadNotice(filename) {
-    fetch(`updates/${filename}`)
-      .then(res => res.text())
-      .then(md => {
-        noticeBody.innerHTML = markdownToHtml(md);
-        listView.style.display = "none";
-        detailView.style.display = "block";
-
-        currentNoticeId = filename.replace(/[^a-zA-Z0-9]/g, "_");
-        loadComments(currentNoticeId);
-      });
-  }
-
-  // 댓글 불러오기
-  function loadComments(noticeId) {
-    commentList.innerHTML = "";
-    db.collection("comments")
-      .where("page", "==", noticeId)
-      .orderBy("timestamp", "desc")
-      .onSnapshot(snapshot => {
-        commentList.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const div = document.createElement("div");
-          div.className = "comment";
-          div.innerHTML = `<strong>${escapeHtml(data.nickname)}</strong><br>${escapeHtml(data.message)}`;
-          commentList.appendChild(div);
+    // 공지 로드
+    function loadNotice(filename) {
+      currentNoticeId = filename;
+      fetch(`updates/${filename}`)
+        .then(r => r.text())
+        .then(md => {
+          noticeBody.innerHTML = markdownToHtml(md);
+          listView.style.display = 'none';
+          detailView.style.display = 'block';
+          loadComments(filename);
         });
+    }
+
+    // 뒤로가기
+    function goBack() {
+      detailView.style.display = 'none';
+      listView.style.display = 'flex';
+      commentList.innerHTML = "";
+      currentNoticeId = null;
+      if(unsubscribeComments) unsubscribeComments();
+    }
+
+    // 테마 토글
+    const toggleBtn = document.querySelector('.theme-toggle');
+    toggleBtn.addEventListener('click', toggleTheme);
+    (function applySavedTheme() {
+      if(localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        toggleBtn.textContent = '☀️';
+      }
+    })();
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      toggleBtn.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    // 댓글 실시간 불러오기 (구독 해제용 변수)
+    let unsubscribeComments = null;
+
+    // 댓글 로드 및 실시간 업데이트 함수
+    function loadComments(noticeId) {
+      commentList.innerHTML = "";
+
+      if(unsubscribeComments) unsubscribeComments();
+
+      unsubscribeComments = db.collection("comments")
+        .where("page", "==", noticeId)
+        .orderBy("timestamp", "asc")
+        .onSnapshot(snapshot => {
+          commentList.innerHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const nickname = escapeHtml(data.nickname);
+            const message = escapeHtml(data.message);
+            const div = document.createElement("div");
+            div.className = "comment";
+            div.innerHTML = `<strong>${nickname}</strong><div>${message}</div>`;
+            commentList.appendChild(div);
+          });
+          // 스크롤 맨 아래로 이동
+          commentList.scrollTop = commentList.scrollHeight;
+        });
+    }
+
+    // 댓글 등록 처리
+    commentForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const nickname = commentForm.nickname.value.trim();
+      const message = commentForm.message.value.trim();
+
+      if(!nickname || !message){
+        alert("닉네임과 댓글을 모두 입력해주세요.");
+        return;
+      }
+
+      db.collection("comments").add({
+        page: currentNoticeId,
+        nickname,
+        message,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        commentForm.reset();
+      }).catch(err => {
+        alert("댓글 등록 중 오류가 발생했습니다.");
+        console.error(err);
       });
-  }
-
-  // 댓글 등록 처리
-  commentForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const nickname = commentForm.nickname.value.trim();
-    const message = commentForm.message.value.trim();
-    if (!nickname || !message) return alert("닉네임과 댓글을 입력하세요.");
-
-    db.collection("comments").add({
-      page: currentNoticeId,
-      nickname,
-      message,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      commentForm.reset();
-    }).catch(err => {
-      console.error("댓글 등록 실패", err);
-      alert("댓글 등록에 실패했습니다.");
     });
-  });
-
-  function goBack() {
-    detailView.style.display = "none";
-    listView.style.display = "block";
-    commentList.innerHTML = "";
-  }
-
-  function toggleTheme() {
-    document.body.classList.toggle("dark");
-    const dark = document.body.classList.contains("dark");
-    localStorage.setItem("theme", dark ? "dark" : "light");
-  }
-
-  (function applySavedTheme() {
-    if(localStorage.getItem("theme") === "dark") document.body.classList.add("dark");
-  })();
-
-  // HTML 이스케이프 함수 (XSS 방지)
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, function(m) {
-      return {
-        '&': "&amp;",
-        '<': "&lt;",
-        '>': "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[m];
-    });
-  }
-
-  createNoticeList();
-</script>
+  </script>
 </body>
 </html>
