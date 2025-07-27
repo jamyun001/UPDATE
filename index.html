@@ -99,6 +99,45 @@
       margin-bottom: 2rem;
       white-space: pre-wrap;
     }
+    /* 댓글 스타일 */
+    #comments-section {
+      margin-top: 2rem;
+    }
+    #comments-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+    }
+    #comments-list > div {
+      border-bottom: 1px solid #ddd;
+      padding: 0.3rem 0;
+    }
+    #comments-list > div:last-child {
+      border-bottom: none;
+    }
+    #comment-input {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    #submit-comment {
+      margin-top: 0.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -122,6 +161,14 @@
     <div id="detail-view">
       <button class="back-button" onclick="goBack()">← 목록으로</button>
       <div id="notice-body"></div>
+
+      <!-- 댓글 섹션 -->
+      <div id="comments-section">
+        <h3>댓글</h3>
+        <div id="comments-list">댓글 로딩 중...</div>
+        <textarea id="comment-input" rows="3" placeholder="댓글을 입력하세요..."></textarea>
+        <button id="submit-comment">댓글 등록</button>
+      </div>
     </div>
   </div>
 
@@ -129,7 +176,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <script>
-    // Firebase 설정 - 자신의 설정값으로 교체
+    // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyAPVJcXblj0MzeSWhJomvl8xczyp2Unp6w",
       authDomain: "chating-382e3.firebaseapp.com",
@@ -145,14 +192,17 @@
     // 공지 md 목록
     const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
 
-    // 버전 오름차순 정렬 함수 (낮은 버전이 위)
+    // 버전 오름차순 정렬 함수 (3자리까지 지원, 숫자 크기로 제대로 정렬)
     function versionSortAsc(a, b) {
-      const toArr = v => v.replace("V","").replace(".md","").split('.').map(Number);
-      const [a1,a2,a3=0] = toArr(a);
-      const [b1,b2,b3=0] = toArr(b);
-      if (a1 !== b1) return a1 - b1;
-      if (a2 !== b2) return a2 - b2;
-      return a3 - b3;
+      const toNums = v => v.replace(/^V/, "").replace(/\.md$/, "").split('.').map(n => parseInt(n, 10));
+      const aNums = toNums(a);
+      const bNums = toNums(b);
+      for (let i = 0; i < Math.max(aNums.length, bNums.length); i++) {
+        const aVal = aNums[i] || 0;
+        const bVal = bNums[i] || 0;
+        if (aVal !== bVal) return aVal - bVal;
+      }
+      return 0;
     }
     mdList.sort(versionSortAsc);
 
@@ -161,7 +211,7 @@
     const noticeBody = document.getElementById('notice-body');
     let currentNoticeId = null;
 
-    // HTML 이스케이프 함수 (기본 XSS 방지용)
+    // HTML 이스케이프 함수 (XSS 방지)
     function escapeHtml(text) {
       return text.replace(/[&<>"']/g, m => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -196,6 +246,70 @@
         });
     });
 
+    // 댓글 UI 요소
+    const commentsList = document.getElementById('comments-list');
+    const commentInput = document.getElementById('comment-input');
+    const submitCommentBtn = document.getElementById('submit-comment');
+
+    // 댓글 불러오기
+    async function loadComments(noticeId) {
+      commentsList.innerHTML = '댓글 로딩 중...';
+
+      try {
+        const snapshot = await db.collection('comments').doc(noticeId).collection('comments')
+          .orderBy('createdAt', 'desc')
+          .get();
+
+        if (snapshot.empty) {
+          commentsList.innerHTML = '<p>댓글이 없습니다.</p>';
+          return;
+        }
+
+        commentsList.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const div = document.createElement('div');
+
+          const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : '';
+
+          div.innerHTML = `
+            <strong>${escapeHtml(data.name || '익명')}</strong> <small style="color: gray;">${date}</small>
+            <p style="margin: 0.3rem 0 0 0;">${escapeHtml(data.text)}</p>
+          `;
+          commentsList.appendChild(div);
+        });
+      } catch (error) {
+        commentsList.innerHTML = '<p>댓글을 불러오는 중 오류가 발생했습니다.</p>';
+        console.error('댓글 로드 오류:', error);
+      }
+    }
+
+    // 댓글 등록
+    async function submitComment() {
+      const text = commentInput.value.trim();
+      if (!text) {
+        alert('댓글 내용을 입력하세요.');
+        return;
+      }
+
+      const commentData = {
+        text,
+        name: '익명',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection('comments').doc(currentNoticeId).collection('comments').add(commentData);
+        commentInput.value = '';
+        loadComments(currentNoticeId);
+      } catch (error) {
+        alert('댓글 등록 중 오류가 발생했습니다.');
+        console.error('댓글 등록 오류:', error);
+      }
+    }
+
+    submitCommentBtn.addEventListener('click', submitComment);
+
     // 공지 로드
     function loadNotice(filename) {
       currentNoticeId = filename;
@@ -205,6 +319,8 @@
           noticeBody.innerHTML = markdownToHtml(md);
           listView.style.display = 'none';
           detailView.style.display = 'flex';
+
+          loadComments(currentNoticeId);
         });
     }
 
@@ -213,6 +329,8 @@
       detailView.style.display = 'none';
       listView.style.display = 'flex';
       currentNoticeId = null;
+      commentsList.innerHTML = '';
+      commentInput.value = '';
     }
 
     // 테마 토글
