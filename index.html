@@ -1,56 +1,107 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>체르 평지생존</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>체르 평지생존 : 리바이브</title>
   <style>
+    :root {
+      --bg: #ffffff;
+      --card: #f0f0f0;
+      --hover: #e6e6e6;
+      --text: #222222;
+      --accent: #007aff;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --hover: #2a2a2a;
+      --text: #f0f0f0;
+      --accent: #00e1ff;
+    }
+
     body {
       margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
       font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
-      color: #f0f0f0;
+      transition: background 0.3s, color 0.3s;
     }
+
     .container {
       max-width: 800px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 2rem 1rem;
+      position: relative;
     }
+
     h1 {
       text-align: center;
-      color: #00e1ff;
+      color: var(--accent);
       margin-bottom: 2rem;
+      font-size: 2rem;
     }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 1rem;
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--hover);
+    }
+
     .notice-list {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
+
     .notice-item {
-      background: #1f1f1f;
-      padding: 1rem;
-      border-radius: 12px;
+      background: var(--card);
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
       cursor: pointer;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
     }
+
     .notice-item:hover {
-      transform: scale(1.02);
-      background-color: #292929;
+      background-color: var(--hover);
+      transform: scale(1.01);
     }
 
     .notice-content {
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.25s ease;
     }
 
     .back-button {
       background: none;
-      color: #00e1ff;
+      color: var(--accent);
       border: none;
       font-size: 1rem;
       cursor: pointer;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
+      padding-left: 0.5rem;
+    }
+
+    #notice-body {
+      line-height: 1.4;
+      font-size: 1rem;
     }
 
     @keyframes fadeIn {
@@ -58,24 +109,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    a {
-      color: #00e1ff;
-    }
-
     @media (max-width: 600px) {
       .container {
-        padding: 1rem;
+        padding: 1.2rem 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📢 업데이트 공지</h1>
-
-    <div id="list-view" class="notice-list">
-    </div>
-
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 모드 전환</button>
+    <h1>📢 공지사항</h1>
+    <div id="list-view" class="notice-list"></div>
     <div id="detail-view" class="notice-content">
       <button class="back-button" onclick="goBack()">← 돌아가기</button>
       <div id="notice-body"></div>
@@ -84,9 +133,9 @@
 
   <script>
     const mdList = [
-      "v1.0.md",
+      "2025-07-27.md",
+      "2025-08-01.md"
     ];
-
     const listView = document.getElementById('list-view');
     const detailView = document.getElementById('detail-view');
     const noticeBody = document.getElementById('notice-body');
@@ -104,17 +153,17 @@
       return md
         .replace(/^# (.*?)$/gm, '<h2>$1</h2>')
         .replace(/^## (.*?)$/gm, '<h3>$1</h3>')
-        .replace(/^\- (.*?)$/gm, '<li>$1</li>')
+        .replace(/^- (.*?)$/gm, '<ul><li>$1</li></ul>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n{2,}/g, '<br>')  // 연속 줄바꿈은 <br> 하나
         .replace(/\n/g, '<br>');
     }
-    
+
     async function loadNotice(filename) {
       const res = await fetch(`updates/${filename}`);
       const md = await res.text();
       const html = markdownToHtml(md);
       noticeBody.innerHTML = html;
-
       listView.style.display = 'none';
       detailView.style.display = 'block';
     }
@@ -123,6 +172,17 @@
       detailView.style.display = 'none';
       listView.style.display = 'flex';
     }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    (function applySavedTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') document.body.classList.add('dark');
+    })();
   </script>
 </body>
 </html>
