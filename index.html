@@ -6,10 +6,10 @@
   <title>체르 평지생존 : 리바이브</title>
   <style>
     :root {
-      --bg: #fff;
-      --card: #f4f4f4;
-      --hover: #e0e0e0;
-      --text: #111;
+      --bg: #f9fbfd;
+      --card: #e8ecf1;
+      --hover: #d4dae3;
+      --text: #222222;
       --accent: #007aff;
     }
     body.dark {
@@ -134,8 +134,7 @@
   </div>
 
 <script>
-  const mdList = ["V1.0.md"];
-
+  const mdList = ["v1.0.md", "v1.1.md", "v1.2.md"];
   const listView = document.getElementById('list-view');
   const detailView = document.getElementById('detail-view');
   const noticeBody = document.getElementById('notice-body');
@@ -148,12 +147,11 @@
       const text = await res.text();
       const title = filename.replace(".md", "");
       const preview = text
-        .replace(/^#.*$/gm, '')       // 제목 제거
-        .replace(/^\s*[-*]\s*/gm, '') // 리스트 기호 제거
+        .replace(/^#.*$/gm, '')
+        .replace(/^\s*[-*]\s*/gm, '')
         .split('\n')
         .find(line => line.trim().length > 0) || '';
       const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
-
       const item = document.createElement('div');
       item.className = 'notice-item';
       item.innerHTML = `
@@ -166,7 +164,6 @@
       console.error(e);
     }
   }
-
   mdList.forEach(createNoticeItem);
 
   function markdownToHtml(md) {
@@ -179,7 +176,6 @@
       .replace(/\n/g, ' ')
       .replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>');
   }
-
   async function loadNotice(filename) {
     try {
       const res = await fetch(`updates/${filename}`);
@@ -193,19 +189,16 @@
       console.error(e);
     }
   }
-
   function goBack() {
     detailView.style.display = 'none';
     listView.style.display = 'flex';
   }
-
   function toggleTheme() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
     toggleBtn.textContent = isDark ? '☀️' : '🌙';
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
-
   (function applySavedTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'dark') {
