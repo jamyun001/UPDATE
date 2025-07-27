@@ -1,9 +1,98 @@
-<div id="md-container"></div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>업데이트 로그</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f7fa;
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
 
-<script>
-fetch('versions/v1.2.md')
-  .then(res => res.text())
-  .then(text => {
-    document.getElementById('md-container').innerText = text; // 단순 텍스트
-  });
-</script>
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #0366d6;
+    }
+
+    .card {
+      background: white;
+      border: 2px solid #0366d6;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      background: #eaf3ff;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #0366d6;
+    }
+
+    #content {
+      margin-top: 40px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .fade {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📦 업데이트 로그</h1>
+
+  <div class="card" onclick="loadMarkdown('versions/v1.2.md')">
+    <div class="card-title">🔹 v1.2.0 - 2025-07-27</div>
+  </div>
+  <div class="card" onclick="loadMarkdown('versions/v1.1.md')">
+    <div class="card-title">🔹 v1.1.0 - 2025-06-15</div>
+  </div>
+  <div class="card" onclick="loadMarkdown('versions/v1.0.md')">
+    <div class="card-title">🔹 v1.0.0 - 2025-05-01</div>
+  </div>
+
+  <div id="content">버전을 선택하면 여기에 업데이트 내역이 표시됩니다.</div>
+
+  <script>
+    const md = window.markdownit();
+
+    function loadMarkdown(path) {
+      fetch(path)
+        .then(res => res.text())
+        .then(text => {
+          const html = md.render(text);
+          const container = document.getElementById('content');
+          container.innerHTML = html;
+          container.classList.add('fade');
+          setTimeout(() => container.classList.remove('fade'), 300);
+        })
+        .catch(err => {
+          document.getElementById('content').innerHTML = '❌ 파일을 불러올 수 없습니다.';
+          console.error(err);
+        });
+    }
+  </script>
+
+</body>
+</html>
