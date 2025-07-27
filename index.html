@@ -173,8 +173,8 @@
 </head>
 <body>
   <div class="container">
-    <button class="theme-toggle" aria-label="Toggle theme">🌙</button>
-    <h1>📢 공지사항</h1>
+    <button class="theme-toggle" aria-label="Toggle theme">EMOJI_1</button>
+    <h1>EMOJI_2 공지사항</h1>
 
     <div id="list-view"></div>
 
@@ -194,17 +194,15 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase 설정 - 자신의 설정값으로 교체하세요
     const firebaseConfig = {
       apiKey: "AIzaSyAPVJcXblj0MzeSWhJomvl8xczyp2Unp6w",
       authDomain: "chating-382e3.firebaseapp.com",
       projectId: "chating-382e3",
-      storageBucket: "chating-382e3.appspot.com",
+      storageBucket: "chating-382e3.firebasestorage.app",
       messagingSenderId: "690140086247",
       appId: "1:690140086247:web:4635c4c0315f465c110742",
       measurementId: "G-SD2QM11LHC"
@@ -214,7 +212,6 @@
 
     const mdList = ["V1.0.md", "V1.0.1.md"];
 
-    // 버전 오름차순 정렬 (낮은 버전이 위)
     function versionSortAsc(a, b) {
       const toArr = v => v.replace("V","").replace(".md","").split('.').map(Number);
       const [a1,a2,a3=0] = toArr(a);
@@ -238,7 +235,6 @@
       })[m]);
     }
 
-    // 간단한 마크다운 변환
     function markdownToHtml(md) {
       return md
         .replace(/^# (.*)$/gm, '<h2>$1</h2>')
@@ -248,24 +244,27 @@
         .replace(/\n/g, '<br>');
     }
 
-    // 공지 목록 렌더링
-    mdList.forEach(filename => {
+    Promise.all(mdList.map(filename =>
       fetch(`updates/${filename}`)
         .then(r => r.text())
         .then(text => {
-          const title = filename.replace(".md","");
+          const title = filename.replace(".md", "");
           const preview = text.split('\n').find(l => l.trim().length > 0) || '';
           const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
-
-          const div = document.createElement('div');
-          div.className = 'notice-item';
-          div.innerHTML = `<div class="notice-title">✅ ${escapeHtml(title)}</div><div class="notice-preview">${escapeHtml(shortPreview)}</div>`;
-          div.onclick = () => loadNotice(filename);
-          listView.appendChild(div);
-        });
+          return { filename, title, shortPreview };
+        })
+    )).then(notices => {
+      notices.forEach(notice => {
+        const div = document.createElement('div');
+        div.className = 'notice-item';
+        div.innerHTML = `<div class="notice-title">✅ ${escapeHtml(notice.title)}</div><div class="notice-preview">${escapeHtml(notice.shortPreview)}</div>`;
+        div.onclick = () => loadNotice(notice.filename);
+        listView.appendChild(div);
+      });
+    }).catch(error => {
+      console.error("공지사항을 불러오는 중 오류 발생:", error);
     });
 
-    // 공지 내용 로드 & 댓글 로드 시작
     function loadNotice(filename) {
       currentNoticeId = filename;
       fetch(`updates/${filename}`)
@@ -278,10 +277,9 @@
         });
     }
 
-    // 목록으로 돌아가기
     function goBack() {
       detailView.style.display = 'none';
-      listView.style.display = 'flex';
+      listView.style.display = 'block';
       commentList.innerHTML = "";
       currentNoticeId = null;
       if(unsubscribeComments) unsubscribeComments();
@@ -289,7 +287,6 @@
 
     document.querySelector('.back-button').addEventListener('click', goBack);
 
-    // 테마 토글
     const toggleBtn = document.querySelector('.theme-toggle');
     toggleBtn.addEventListener('click', toggleTheme);
     (function applySavedTheme() {
@@ -301,14 +298,12 @@
     function toggleTheme() {
       document.body.classList.toggle('dark');
       const isDark = document.body.classList.contains('dark');
-      toggleBtn.textContent = isDark ? '☀️' : '🌙';
+      toggleBtn.textContent = isDark ? '☀️' : 'EMOJI_3';
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // 댓글 실시간 리스너 해제 변수
     let unsubscribeComments = null;
 
-    // 댓글 실시간 로드 & UI 업데이트
     function loadComments(noticeId) {
       commentList.innerHTML = "";
 
@@ -332,7 +327,6 @@
         });
     }
 
-    // 댓글 작성 이벤트
     commentForm.addEventListener("submit", e => {
       e.preventDefault();
       const nickname = commentForm.nickname.value.trim();
@@ -351,7 +345,7 @@
       }).then(() => {
         commentForm.reset();
       }).catch(err => {
-        alert("댓글 등록 중 오류가 발생했습니다.");
+        alert("댓글 등록 중 오류가 발생했습니다. 개발자에게 문의하세요.");
         console.error(err);
       });
     });
