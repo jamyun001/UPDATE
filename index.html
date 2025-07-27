@@ -1,0 +1,9 @@
+<div id="md-container"></div>
+
+<script>
+fetch('versions/v1.2.md')
+  .then(res => res.text())
+  .then(text => {
+    document.getElementById('md-container').innerText = text; // 단순 텍스트
+  });
+</script>
