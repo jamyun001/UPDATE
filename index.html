@@ -239,7 +239,7 @@
 </head>
 <body>
   <div class="container">
-    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle">🌙</button>
     <h1>📢 공지사항</h1>
     <div id="list-view"></div>
 
@@ -298,23 +298,22 @@
       return md.replace(/<p><\/p>/g, '');
     }
 
-    function renderNoticeList() {
+    async function renderNoticeList() {
       listView.innerHTML = '';
+      const promises = mdList.map(filename => fetch(`updates/${filename}`).then(r => r.text()));
+      const texts = await Promise.all(promises);
       for(let i = mdList.length - 1; i >= 0; i--) {
         const filename = mdList[i];
-        fetch(`updates/${filename}`)
-          .then(r => r.text())
-          .then(text => {
-            const title = filename.replace(".md","");
-            const preview = text.split('\n').find(l => l.trim().length > 0) || '';
-            const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
+        const text = texts[i];
+        const title = filename.replace(".md","");
+        const preview = text.split('\n').find(l => l.trim().length > 0) || '';
+        const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
 
-            const div = document.createElement('div');
-            div.className = 'notice-item';
-            div.innerHTML = `<div class="notice-title">✅ ${escapeHtml(title)}</div><div class="notice-preview">${escapeHtml(shortPreview)}</div>`;
-            div.onclick = () => loadNotice(filename);
-            listView.appendChild(div);
-          });
+        const div = document.createElement('div');
+        div.className = 'notice-item';
+        div.innerHTML = `<div class="notice-title">✅ ${escapeHtml(title)}</div><div class="notice-preview">${escapeHtml(shortPreview)}</div>`;
+        div.onclick = () => loadNotice(filename);
+        listView.appendChild(div);
       }
     }
 
