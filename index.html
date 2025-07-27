@@ -157,21 +157,26 @@
   </div>
 
   <script>
-    const mdList = ["V1.0.md", "V1.0.1.md"];
+    // 공지 마크다운 파일 리스트 (필요시 추가)
+    const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
     const listView = document.getElementById('list-view');
     const detailView = document.getElementById('detail-view');
     const noticeBody = document.getElementById('notice-body');
     const commentBox = document.getElementById('comments');
     const toggleBtn = document.querySelector('.theme-toggle');
 
+    // 버전 문자열 숫자 오름차순 정렬 함수
     function versionSort(a, b) {
-      const toArr = v => v.replace(".md", "").split('.').map(Number);
+      const toArr = v => v.replace("V", "").replace(".md", "").split('.').map(Number);
       const [a1, a2, a3 = 0] = toArr(a);
       const [b1, b2, b3 = 0] = toArr(b);
+
       if (a1 !== b1) return a1 - b1;
       if (a2 !== b2) return a2 - b2;
       return a3 - b3;
     }
+
+    // 정렬된 상태로 mdList 세팅
     mdList.sort(versionSort);
 
     function createNoticeItem(filename) {
@@ -212,22 +217,19 @@
         .replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>');
     }
 
-    function loadNotice(filename) {
-      fetch(`updates/${filename}`)
-        .then(res => {
-          if (!res.ok) throw new Error("파일 불러오기 실패");
-          return res.text();
-        })
-        .then(md => {
-          noticeBody.innerHTML = markdownToHtml(md);
-          listView.style.display = 'none';
-          detailView.style.display = 'block';
-          loadComments(filename);
-        })
-        .catch(e => {
-          alert("공지 불러오기 실패");
-          console.error(e);
-        });
+    async function loadNotice(filename) {
+      try {
+        const res = await fetch(`updates/${filename}`);
+        if (!res.ok) throw new Error("파일 불러오기 실패");
+        const md = await res.text();
+        noticeBody.innerHTML = markdownToHtml(md);
+        listView.style.display = 'none';
+        detailView.style.display = 'block';
+        loadComments(filename);
+      } catch (e) {
+        alert("공지 불러오기 실패");
+        console.error(e);
+      }
     }
 
     function goBack() {
@@ -251,16 +253,20 @@
       }
     })();
 
-    function loadComments(id) {
+    // Cusdis 댓글 로드
+    function loadComments(filename) {
       commentBox.innerHTML = '';
+
+      // data-page-id는 특수문자 제거하여 유니크하게 설정
+      const cleanId = filename.replace(/[^a-zA-Z0-9-_]/g, '');
 
       const thread = document.createElement('div');
       thread.id = 'cusdis_thread';
       thread.setAttribute('data-host', 'https://cusdis.com');
       thread.setAttribute('data-app-id', 'a571c643-3994-4a9c-bb58-62fe6b3395dc');
-      thread.setAttribute('data-page-id', id);
-      thread.setAttribute('data-page-url', location.href + '#' + id);
-      thread.setAttribute('data-page-title', id);
+      thread.setAttribute('data-page-id', cleanId);
+      thread.setAttribute('data-page-url', location.href + '#' + cleanId);
+      thread.setAttribute('data-page-title', cleanId);
 
       commentBox.appendChild(thread);
 
@@ -271,6 +277,7 @@
       commentBox.appendChild(script);
     }
 
+    // 초기화: 공지 리스트 생성
     mdList.forEach(createNoticeItem);
   </script>
 </body>
