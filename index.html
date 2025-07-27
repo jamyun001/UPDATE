@@ -272,19 +272,20 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const mdList = ["V1.0.md", "V1.0.1.md"];
-    function versionSortDesc(a, b) {
+    const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
+    function versionSortDescSimple(a, b) {
       const toNums = v => v.replace(/^V/, "").replace(/\.md$/, "").split('.').map(n => parseInt(n, 10));
       const aNums = toNums(a);
       const bNums = toNums(b);
-      for (let i = 0; i < Math.max(aNums.length, bNums.length); i++) {
+      const maxLen = Math.max(aNums.length, bNums.length);
+      for (let i = 0; i < maxLen; i++) {
         const aVal = aNums[i] || 0;
         const bVal = bNums[i] || 0;
         if (aVal !== bVal) return bVal - aVal;
       }
       return 0;
     }
-    mdList.sort(versionSortDesc);
+    mdList.sort(versionSortDescSimple);
 
     const listView = document.getElementById('list-view');
     const detailView = document.getElementById('detail-view');
