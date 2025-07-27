@@ -113,6 +113,12 @@
     #comments {
       margin-top: 2rem;
     }
+
+    /* Cusdis 스타일 수정 (이메일 제거용) */
+    .cusdis-form .field[data-name="email"] {
+      display: none !important;
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 1rem;
@@ -150,7 +156,8 @@
       return b1 - a1 || b2 - a2 || b3 - a3;
     }
 
-    mdList.sort(versionSort).forEach(createNoticeItem);
+    // ✅ 오래된 게 위로 (오름차순)
+    mdList.sort(versionSort).reverse().forEach(createNoticeItem);
 
     async function createNoticeItem(filename) {
       try {
@@ -224,6 +231,7 @@
       }
     })();
 
+    // ✅ Cusdis 댓글 로드
     function loadComments(id) {
       commentBox.innerHTML = '';
 
