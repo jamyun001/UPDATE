@@ -214,14 +214,6 @@
       const isDark = document.body.classList.contains('dark');
       toggleBtn.textContent = isDark ? '☀️' : '🌙';
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      const utterances = document.querySelector('iframe.utterances-frame');
-      if (utterances) {
-        const message = {
-          type: 'set-theme',
-          theme: isDark ? 'github-dark' : 'github-light'
-        };
-        utterances.contentWindow.postMessage(message, 'https://utteranc.es');
-      }
     }
 
     (function applySavedTheme() {
@@ -234,14 +226,21 @@
 
     function loadComments(id) {
       commentBox.innerHTML = '';
-      const theme = document.body.classList.contains('dark') ? 'github-dark' : 'github-light';
+
+      const thread = document.createElement('div');
+      thread.id = 'cusdis_thread';
+      thread.setAttribute('data-host', 'https://cusdis.com');
+      thread.setAttribute('data-app-id', 'a571c643-3994-4a9c-bb58-62fe6b3395dc');
+      thread.setAttribute('data-page-id', id);
+      thread.setAttribute('data-page-url', location.href + '#' + id);
+      thread.setAttribute('data-page-title', id);
+
       const script = document.createElement('script');
-      script.src = 'https://utteranc.es/client.js';
-      script.setAttribute('repo', 'jamyun001/UPDATE');
-      script.setAttribute('issue-term', id);
-      script.setAttribute('theme', theme);
-      script.crossOrigin = 'anonymous';
+      script.src = 'https://cusdis.com/js/cusdis.es.js';
       script.async = true;
+      script.defer = true;
+
+      commentBox.appendChild(thread);
       commentBox.appendChild(script);
     }
   </script>
