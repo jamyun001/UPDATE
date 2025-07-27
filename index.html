@@ -272,20 +272,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const mdList = ["V1.0.md", "V1.0.1.md"];
-    function versionSortDescSimple(a, b) {
-      const toNums = v => v.replace(/^V/, "").replace(/\.md$/, "").split('.').map(n => parseInt(n, 10));
-      const aNums = toNums(a);
-      const bNums = toNums(b);
-      const maxLen = Math.max(aNums.length, bNums.length);
-      for (let i = 0; i < maxLen; i++) {
-        const aVal = aNums[i] || 0;
-        const bVal = bNums[i] || 0;
-        if (aVal !== bVal) return bVal - aVal;
-      }
-      return 0;
-    }
-    mdList.sort(versionSortDescSimple);
+    const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
 
     const listView = document.getElementById('list-view');
     const detailView = document.getElementById('detail-view');
@@ -313,7 +300,8 @@
 
     function renderNoticeList() {
       listView.innerHTML = '';
-      mdList.forEach(filename => {
+      for(let i = mdList.length - 1; i >= 0; i--) {
+        const filename = mdList[i];
         fetch(`updates/${filename}`)
           .then(r => r.text())
           .then(text => {
@@ -327,7 +315,7 @@
             div.onclick = () => loadNotice(filename);
             listView.appendChild(div);
           });
-      });
+      }
     }
 
     const commentsList = document.getElementById('comments-list');
