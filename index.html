@@ -123,20 +123,14 @@
     li {
       margin: 0.2rem 0;
     }
-    /* Cusdis 이메일 필드 제거 */
-    .cusdis-form .field[data-name="email"] {
-      display: none !important;
-    }
-
-    /* Cusdis 댓글 UI 최소 커스텀 */
+    /* 댓글 iframe 스타일 */
     #comments iframe {
       width: 100% !important;
-      min-height: 300px;
+      min-height: 400px;
       border-radius: 12px;
       border: none;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     @media (max-width: 600px) {
       .container {
         padding: 1rem;
@@ -170,7 +164,6 @@
     const commentBox = document.getElementById('comments');
     const toggleBtn = document.querySelector('.theme-toggle');
 
-    // 올바른 오름차순 정렬 (낮은 버전부터)
     function versionSort(a, b) {
       const toArr = v => v.replace(".md", "").split('.').map(Number);
       const [a1, a2, a3 = 0] = toArr(a);
@@ -258,7 +251,6 @@
       }
     })();
 
-    // Cusdis 댓글 불러오기
     function loadComments(id) {
       commentBox.innerHTML = '';
 
@@ -270,12 +262,12 @@
       thread.setAttribute('data-page-url', location.href + '#' + id);
       thread.setAttribute('data-page-title', id);
 
+      commentBox.appendChild(thread);
+
       const script = document.createElement('script');
       script.src = 'https://cusdis.com/js/cusdis.es.js';
       script.async = true;
       script.defer = true;
-
-      commentBox.appendChild(thread);
       commentBox.appendChild(script);
     }
 
