@@ -272,7 +272,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const mdList = ["V1.0.md", "V1.0.1.md", "V1.1.md", "V2.0.md"];
+    const mdList = ["V1.0.md", "V1.0.1.md"];
     function versionSortDescSimple(a, b) {
       const toNums = v => v.replace(/^V/, "").replace(/\.md$/, "").split('.').map(n => parseInt(n, 10));
       const aNums = toNums(a);
