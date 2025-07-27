@@ -1,98 +1,11 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <title>업데이트 로그</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f5f7fa;
-      padding: 40px 20px;
-      max-width: 900px;
-      margin: auto;
-    }
+업데이트 로그 :root { --bg: #f5f7fa; --card-bg: #ffffff; --text: #222222; --accent: #4f46e5; --border: #dddddd; } @media (prefers-color-scheme: dark) { :root { --bg: #111827; --card-bg: #1f2937; --text: #f3f4f6; --accent: #818cf8; --border: #374151; } } body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem 1rem; max-width: 720px; margin-inline: auto; } h1 { text-align: center; color: var(--accent); font-size: 2rem; margin-bottom: 1.5rem; } .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; margin: 0.75rem 0; cursor: pointer; transition: transform 0.2s ease, background 0.3s ease; } .card:hover { background-color: var(--accent); color: white; transform: scale(1.02); } .card-title { font-weight: 600; font-size: 1rem; } #content { margin-top: 2rem; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 0 8px rgba(0, 0, 0, 0.05); animation: fadeIn 0.4s ease; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } @media (max-width: 480px) { .card-title { font-size: 0.9rem; } #content { padding: 1rem; font-size: 0.9rem; } } 📦 업데이트 로그 
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #0366d6;
-    }
+🔹 v1.2.0 - 2025-07-27
 
-    .card {
-      background: white;
-      border: 2px solid #0366d6;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 10px 0;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+🔹 v1.1.0 - 2025-06-15
 
-    .card:hover {
-      background: #eaf3ff;
-    }
+🔹 v1.0.0 - 2025-05-01
 
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #0366d6;
-    }
+버전을 선택하면 여기에 업데이트 내역이 표시됩니다.
 
-    #content {
-      margin-top: 40px;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .fade {
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0;}
-      to {opacity: 1;}
-    }
-  </style>
-</head>
-<body>
-
-  <h1>📦 업데이트 로그</h1>
-
-  <div class="card" onclick="loadMarkdown('versions/v1.2.md')">
-    <div class="card-title">🔹 v1.2.0 - 2025-07-27</div>
-  </div>
-  <div class="card" onclick="loadMarkdown('versions/v1.1.md')">
-    <div class="card-title">🔹 v1.1.0 - 2025-06-15</div>
-  </div>
-  <div class="card" onclick="loadMarkdown('versions/v1.0.md')">
-    <div class="card-title">🔹 v1.0.0 - 2025-05-01</div>
-  </div>
-
-  <div id="content">버전을 선택하면 여기에 업데이트 내역이 표시됩니다.</div>
-
-  <script>
-    const md = window.markdownit();
-
-    function loadMarkdown(path) {
-      fetch(path)
-        .then(res => res.text())
-        .then(text => {
-          const html = md.render(text);
-          const container = document.getElementById('content');
-          container.innerHTML = html;
-          container.classList.add('fade');
-          setTimeout(() => container.classList.remove('fade'), 300);
-        })
-        .catch(err => {
-          document.getElementById('content').innerHTML = '❌ 파일을 불러올 수 없습니다.';
-          console.error(err);
-        });
-    }
-  </script>
-
-</body>
-</html>
+const md = window.markdownit(); function loadMarkdown(path) { fetch(path) .then(res => res.text()) .then(text => { const html = md.render(text); const container = document.getElementById('content'); container.innerHTML = html; }) .catch(err => { document.getElementById('content').innerHTML = '❌ 파일을 불러올 수 없습니다.'; console.error(err); }); } 
