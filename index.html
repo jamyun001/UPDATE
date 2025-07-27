@@ -33,6 +33,9 @@
       margin: 0 auto;
       padding: 1.2rem 1rem;
       position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     h1 {
       text-align: center;
@@ -50,10 +53,11 @@
       cursor: pointer;
       color: var(--accent);
     }
-    .notice-list {
+    #list-view {
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
+      margin-bottom: 1rem;
     }
     .notice-item {
       background: var(--card);
@@ -79,9 +83,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .notice-content {
+    #detail-view {
       display: none;
       animation: fadeIn 0.2s ease;
+      flex-grow: 1;
+      overflow-y: auto;
     }
     .back-button {
       background: none;
@@ -95,6 +101,13 @@
     #notice-body {
       font-size: 0.95rem;
       line-height: 1.5;
+      margin-bottom: 2rem;
+      white-space: pre-wrap;
+    }
+    #comments {
+      margin-top: 1rem;
+      border-top: 1px solid #ccc;
+      padding-top: 1rem;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -110,13 +123,18 @@
     li {
       margin: 0.2rem 0;
     }
-    #comments {
-      margin-top: 2rem;
-    }
-
-    /* Cusdis 스타일 수정 (이메일 제거용) */
+    /* Cusdis 이메일 필드 제거 */
     .cusdis-form .field[data-name="email"] {
       display: none !important;
+    }
+
+    /* Cusdis 댓글 UI 최소 커스텀 */
+    #comments iframe {
+      width: 100% !important;
+      min-height: 300px;
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     @media (max-width: 600px) {
@@ -126,6 +144,9 @@
       h1 {
         font-size: 1.5rem;
       }
+      #notice-body {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -133,8 +154,8 @@
   <div class="container">
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
     <h1>📢 공지사항</h1>
-    <div id="list-view" class="notice-list"></div>
-    <div id="detail-view" class="notice-content">
+    <div id="list-view"></div>
+    <div id="detail-view">
       <button class="back-button" onclick="goBack()">← 돌아가기</button>
       <div id="notice-body"></div>
       <div id="comments"></div>
@@ -146,42 +167,45 @@
     const listView = document.getElementById('list-view');
     const detailView = document.getElementById('detail-view');
     const noticeBody = document.getElementById('notice-body');
-    const toggleBtn = document.querySelector('.theme-toggle');
     const commentBox = document.getElementById('comments');
+    const toggleBtn = document.querySelector('.theme-toggle');
 
+    // 올바른 오름차순 정렬 (낮은 버전부터)
     function versionSort(a, b) {
       const toArr = v => v.replace(".md", "").split('.').map(Number);
       const [a1, a2, a3 = 0] = toArr(a);
       const [b1, b2, b3 = 0] = toArr(b);
-      return b1 - a1 || b2 - a2 || b3 - a3;
+      if (a1 !== b1) return a1 - b1;
+      if (a2 !== b2) return a2 - b2;
+      return a3 - b3;
     }
+    mdList.sort(versionSort);
 
-    // ✅ 오래된 게 위로 (오름차순)
-    mdList.sort(versionSort).reverse().forEach(createNoticeItem);
+    function createNoticeItem(filename) {
+      fetch(`updates/${filename}`)
+        .then(res => {
+          if (!res.ok) throw new Error("파일 불러오기 실패");
+          return res.text();
+        })
+        .then(text => {
+          const title = filename.replace(".md", "");
+          const preview = text
+            .replace(/^#.*$/gm, '')
+            .replace(/^\s*[-*]\s*/gm, '')
+            .split('\n')
+            .find(line => line.trim().length > 0) || '';
+          const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
 
-    async function createNoticeItem(filename) {
-      try {
-        const res = await fetch(`updates/${filename}`);
-        if (!res.ok) throw new Error("파일을 불러올 수 없습니다.");
-        const text = await res.text();
-        const title = filename.replace(".md", "");
-        const preview = text
-          .replace(/^#.*$/gm, '')
-          .replace(/^\s*[-*]\s*/gm, '')
-          .split('\n')
-          .find(line => line.trim().length > 0) || '';
-        const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
-        const item = document.createElement('div');
-        item.className = 'notice-item';
-        item.innerHTML = `
-          <div>✅️ ${title}</div>
-          <div>${shortPreview}</div>
-        `;
-        item.onclick = () => loadNotice(filename);
-        listView.appendChild(item);
-      } catch(e) {
-        console.error(e);
-      }
+          const item = document.createElement('div');
+          item.className = 'notice-item';
+          item.innerHTML = `
+            <div>✅️ ${title}</div>
+            <div>${shortPreview}</div>
+          `;
+          item.onclick = () => loadNotice(filename);
+          listView.appendChild(item);
+        })
+        .catch(console.error);
     }
 
     function markdownToHtml(md) {
@@ -195,19 +219,22 @@
         .replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>');
     }
 
-    async function loadNotice(filename) {
-      try {
-        const res = await fetch(`updates/${filename}`);
-        if (!res.ok) throw new Error("파일을 불러올 수 없습니다.");
-        const md = await res.text();
-        noticeBody.innerHTML = markdownToHtml(md);
-        listView.style.display = 'none';
-        detailView.style.display = 'block';
-        loadComments(filename);
-      } catch(e) {
-        alert("공지 내용을 불러오는 데 실패했습니다.");
-        console.error(e);
-      }
+    function loadNotice(filename) {
+      fetch(`updates/${filename}`)
+        .then(res => {
+          if (!res.ok) throw new Error("파일 불러오기 실패");
+          return res.text();
+        })
+        .then(md => {
+          noticeBody.innerHTML = markdownToHtml(md);
+          listView.style.display = 'none';
+          detailView.style.display = 'block';
+          loadComments(filename);
+        })
+        .catch(e => {
+          alert("공지 불러오기 실패");
+          console.error(e);
+        });
     }
 
     function goBack() {
@@ -231,7 +258,7 @@
       }
     })();
 
-    // ✅ Cusdis 댓글 로드
+    // Cusdis 댓글 불러오기
     function loadComments(id) {
       commentBox.innerHTML = '';
 
@@ -251,6 +278,8 @@
       commentBox.appendChild(thread);
       commentBox.appendChild(script);
     }
+
+    mdList.forEach(createNoticeItem);
   </script>
 </body>
 </html>
