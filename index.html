@@ -121,148 +121,6 @@ h1 {
   display: block;
 }
 
-#comments-section {
-  margin-top: 2rem;
-  border-top: 2px solid var(--accent);
-  padding-top: 1rem;
-}
-
-#nickname-input,
-#comment-input {
-  width: 100%;
-  padding: 0.6rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--accent);
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 1rem;
-  resize: vertical;
-  box-sizing: border-box;
-  transition: border-color 0.3s;
-}
-
-#nickname-input {
-  margin-bottom: 0.6rem;
-}
-
-#nickname-input:focus,
-#comment-input:focus {
-  outline: none;
-  border-color: #005fcc;
-  box-shadow: 0 0 6px #005fccaa;
-}
-
-#submit-comment {
-  margin-top: 0.6rem;
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  transition: 0.3s;
-}
-
-#submit-comment:hover {
-  background: #005fcc;
-}
-
-#comments-list {
-  max-height: 320px;
-  overflow-y: auto;
-  border: 1px solid var(--accent);
-  padding: 0.8rem;
-  border-radius: 12px;
-  background: var(--card);
-  color: var(--text);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
-  margin-top: 1rem;
-}
-
-.comment-item {
-  border-bottom: 1px solid #ddd;
-  padding: 0.6rem 0;
-  border-radius: 8px;
-  position: relative;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-}
-
-.comment-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: var(--accent);
-  font-size: 0.95rem;
-}
-
-.comment-date {
-  color: gray;
-  font-style: italic;
-  font-weight: normal;
-  font-size: 0.85rem;
-}
-
-.comment-text {
-  margin: 0.3rem 0 0 0;
-  white-space: pre-wrap;
-  font-size: 0.95rem;
-}
-
-.reply-button {
-  font-size: 0.85rem;
-  color: var(--accent);
-  cursor: pointer;
-  user-select: none;
-  position: absolute;
-  right: 0;
-  top: 0.6rem;
-  background: none;
-  border: none;
-}
-
-.replies {
-  margin-left: 1.5rem;
-  margin-top: 0.5rem;
-}
-
-.reply-form {
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.reply-form textarea {
-  width: 100%;
-  padding: 0.4rem;
-  border-radius: 6px;
-  border: 1.2px solid var(--accent);
-  resize: vertical;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 0.9rem;
-}
-
-.reply-form button {
-  align-self: flex-end;
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 0.3rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.reply-form button:hover {
-  background: #005fcc;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -283,14 +141,6 @@ h1 {
   <div id="detail-view">
     <button class="back-button" onclick="location.reload()">← 목록으로</button>
     <div id="notice-body"></div>
-
-    <div id="comments-section">
-      <h3>댓글</h3>
-      <input id="nickname-input" type="text" placeholder="닉네임을 입력하세요 (최대 20자)" maxlength="20" />
-      <textarea id="comment-input" rows="3" placeholder="댓글을 입력하세요..."></textarea>
-      <button id="submit-comment">댓글 등록</button>
-      <div id="comments-list">댓글 로딩 중...</div>
-    </div>
   </div>
 </div>
 
@@ -298,12 +148,13 @@ h1 {
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "APIKEY_HERE",
+  apiKey: "AIzaSyDBKiVjSzFd0fXoHO76D1Lgp5dYbC0GJKU",
   authDomain: "update-2082c.firebaseapp.com",
   projectId: "update-2082c",
-  storageBucket: "update-2082c.appspot.com",
+  storageBucket: "update-2082c.firebasestorage.app",
   messagingSenderId: "608667941097",
-  appId: "1:608667941097:web:82fb223bc541f3dcc7d878"
+  appId: "1:608667941097:web:a7aeae404664bb2cc7d878",
+  measurementId: "G-PPVD62WJCS"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -311,12 +162,6 @@ const db = firebase.firestore();
 const listView = document.getElementById('list-view');
 const detailView = document.getElementById('detail-view');
 const noticeBody = document.getElementById('notice-body');
-const commentsList = document.getElementById('comments-list');
-const commentInput = document.getElementById('comment-input');
-const nicknameInput = document.getElementById('nickname-input');
-const submitCommentBtn = document.getElementById('submit-comment');
-
-let currentNoticeId = null;
 
 function escapeHtml(text){
   return text.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
@@ -355,7 +200,6 @@ async function renderNoticeList(){
 
 // 공지 상세보기
 function loadNotice(id,data){
-  currentNoticeId = id;
   let html='';
   if(data.title) html += `<h2>${escapeHtml(data.title)}</h2>`;
   if(data.imageUrl) html += `<img src="${escapeHtml(data.imageUrl)}" alt="공지 이미지">`;
@@ -363,115 +207,7 @@ function loadNotice(id,data){
   noticeBody.innerHTML = html;
   listView.style.display = 'none';
   detailView.style.display = 'flex';
-  loadComments(currentNoticeId);
 }
-
-// IP 가져오기
-async function getUserIP(){
-  try{
-    const res = await fetch('https://api4.ipify.org?format=json');
-    const data = await res.json();
-    return data.ip||'unknown';
-  }catch(e){ console.error(e); return 'unknown'; }
-}
-
-// 댓글 로딩 (답글 포함)
-async function loadComments(noticeId){
-  commentsList.innerHTML='댓글 로딩 중...';
-  try{
-    const snapshot = await db.collection('comments').doc(noticeId).collection('comments').orderBy('createdAt','asc').get();
-    if(snapshot.empty){ commentsList.innerHTML='<p>댓글이 없습니다.</p>'; return; }
-
-    const commentsMap = new Map();
-    snapshot.forEach(doc=>commentsMap.set(doc.id,{id:doc.id,...doc.data(),replies:[]}))
-
-    const roots = [];
-    commentsMap.forEach(c=>{
-      if(c.parentId){
-        const parent = commentsMap.get(c.parentId);
-        if(parent) parent.replies.push(c);
-      } else roots.push(c);
-    });
-
-    function renderComment(comment, container){
-      const div = document.createElement('div');
-      div.className='comment-item';
-      const dateStr = comment.createdAt?comment.createdAt.toDate().toLocaleString():'';
-      div.innerHTML = `<div class="comment-header">
-        <span>${escapeHtml(comment.name||'익명')}</span>
-        <span class="comment-date">${dateStr}</span>
-        <button class="reply-button">답글</button>
-      </div>
-      <div class="comment-text">${escapeHtml(comment.text)}</div>`;
-
-      container.appendChild(div);
-
-      const repliesContainer = document.createElement('div');
-      repliesContainer.className='replies';
-      div.appendChild(repliesContainer);
-
-      const replyForm = document.createElement('div');
-      replyForm.className='reply-form';
-      replyForm.style.display='none';
-      replyForm.innerHTML=`<textarea rows="2" placeholder="답글을 입력하세요..."></textarea><button>등록</button>`;
-      div.appendChild(replyForm);
-
-      const replyBtn = div.querySelector('.reply-button');
-      const replyTextarea = replyForm.querySelector('textarea');
-      const replySubmitBtn = replyForm.querySelector('button');
-
-      replyBtn.addEventListener('click',()=>{ 
-        replyForm.style.display = replyForm.style.display==='none'?'flex':'none'; 
-        if(replyForm.style.display==='flex') replyTextarea.focus(); 
-      });
-
-      replySubmitBtn.addEventListener('click', async()=>{
-        const text = replyTextarea.value.trim();
-        if(!text){ alert('답글 내용을 입력하세요.'); return; }
-        const name = nicknameInput.value.trim()||'익명';
-        const ip = await getUserIP();
-        try{
-          await db.collection('comments').doc(currentNoticeId).collection('comments').add({
-            text,name,ip,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            parentId: comment.id
-          });
-          replyTextarea.value='';
-          replyForm.style.display='none';
-          loadComments(currentNoticeId);
-        }catch(e){ console.error(e); alert('답글 등록 중 오류 발생');}
-      });
-
-      if(comment.replies.length){
-        comment.replies.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-        comment.replies.forEach(r=>renderComment(r,repliesContainer));
-      }
-    }
-
-    commentsList.innerHTML='';
-    roots.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-    roots.forEach(c=>renderComment(c,commentsList));
-    commentsList.scrollTop = commentsList.scrollHeight;
-  }catch(e){ commentsList.innerHTML='<p>댓글 불러오기 실패</p>'; console.error(e);}
-}
-
-// 댓글 등록
-async function submitComment(){
-  const text = commentInput.value.trim();
-  if(!text){ alert('댓글 내용을 입력하세요.'); return; }
-  const name = nicknameInput.value.trim()||'익명';
-  const ip = await getUserIP();
-  try{
-    await db.collection('comments').doc(currentNoticeId).collection('comments').add({
-      text,name,ip,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      parentId:null
-    });
-    commentInput.value='';
-    loadComments(currentNoticeId);
-  }catch(e){ console.error(e); alert('댓글 등록 실패');}
-}
-submitCommentBtn.addEventListener('click',submitComment);
 
 // 초기 목록 렌더링
 renderNoticeList();
