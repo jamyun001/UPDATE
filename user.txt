@@ -1,2 +1,2 @@
-id : dPwns,dangdang2
-pw : dPwnsbabo,dangdang2babo
+dPwns,dangdang2
+dPwnsbabo,dangdang2babo
