@@ -1,5 +1,2 @@
-ID : dPwns
-PASSWORD : dPwnsbabo
-
-ID : dangdang2
-PASSWORD : dangdang2babo
+id : dPwns,dangdang2
+pw : dPwnsbabo,dangdang2babo
